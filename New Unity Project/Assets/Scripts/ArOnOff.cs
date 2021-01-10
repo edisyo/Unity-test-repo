@@ -11,6 +11,8 @@ public class ArOnOff : MonoBehaviour
     public GameObject ARSessionOrigin;
     public GameObject ARPlanes;
 
+    public GameObject[] UIElements;
+
     
     private bool isOn;
 
@@ -19,44 +21,69 @@ public class ArOnOff : MonoBehaviour
 
     TextMeshProUGUI textComponent;
 
+    start_game start_game_script;
+
     void Start()
     {
         textComponent = text.GetComponent<TextMeshProUGUI>();
-        
+        start_game_script = FindObjectOfType<start_game>();
         
         //turn off AR
-        isOn = false;
+        //isOn = false;
         textComponent.text = textOff;
-        turnOnOff_AR_objects(false);
+
+        ARSession.SetActive(false);
+        ARSessionOrigin.SetActive(false);
+        ARPlanes.SetActive(false);
+
+        //turn on main menu
+        turnOnMainMenu();
         
     }
-    
-    public void button()
-    {
-        if(isOn == true)
-        {
-            Debug.Log("turn off");
-            isOn = false;
-            textComponent.text = textOff;
-            turnOnOff_AR_objects(false);
-            return;
-        }
 
-        if(isOn == false)
+    private void Update() {
+        checking_AR();   
+    }
+    
+    public void checking_AR()
+    {
+        if(ARSessionOrigin.activeSelf == true)
         {
-            Debug.Log("turn on");
-            isOn = true;
+            Debug.Log("AR is on");
             textComponent.text = textOn;
-            turnOnOff_AR_objects(true);
-            return;
+            
+        } else if(ARSessionOrigin.activeSelf == false)
+        {
+            Debug.Log("AR is off");
+            textComponent.text = textOff;
         } 
         
         
     }
 
-    private void turnOnOff_AR_objects(bool state){
-        ARSession.SetActive(state);
-        ARSessionOrigin.SetActive(state);
-        ARPlanes.SetActive(state);
+    public void Start_button(){
+
+        //turn on AR
+        ARSession.SetActive(true);
+        ARSessionOrigin.SetActive(true);
+        ARPlanes.SetActive(true);
+
+        //turn off main menu
+        foreach (var item in UIElements)
+        {
+            item.SetActive(false);
+        }
+
+        if(start_game_script != null){
+            //if has found this script, change bool to true
+            start_game_script.hasPressedStart = true;
+        }
+    }
+
+    public void turnOnMainMenu(){
+        foreach (var item in UIElements)
+        {
+            item.SetActive(true);
+        }
     }
 }
