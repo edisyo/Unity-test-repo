@@ -20,6 +20,7 @@ public class start_game : MonoBehaviour
     public GameObject touchScreenText;
     public TextMeshProUGUI debugText;
     public TextMeshProUGUI debugText2;
+    public GameObject backButton;
 
     private ARRaycastManager ArRaycast;
     private bool hasFoundPlane;
@@ -39,6 +40,7 @@ public class start_game : MonoBehaviour
         touchScreenText.SetActive(false);
         calibrationIsDone = false;
         readyToPreview = false;
+        backButton.SetActive(false);
 
         objectToInstantiate.SetActive(false);
 
@@ -55,6 +57,8 @@ public class start_game : MonoBehaviour
     {   
         if(hasPressedStart)
         {
+            backButton.SetActive(true);
+
             if(!calibrationIsDone)
             {
                 //update preview object
@@ -123,5 +127,27 @@ public class start_game : MonoBehaviour
         calibrationIsDone = true;
         scan_text.SetActive(false);
 
+    }
+
+    public void back_Button()
+    {
+        previewObject.SetActive(false);
+        objectToInstantiate.SetActive(false);
+        
+
+        //UI objects
+        backButton.SetActive(false);
+        scan_text.SetActive(false);
+        touchScreenText.SetActive(false);
+
+        FindObjectOfType<ArOnOff>().turnOnMainMenu();
+
+        previewObject.transform.position = new Vector3(0f,0f,0f);
+        objectToInstantiate.transform.position = new Vector3(0f,0f,0f);
+
+        calibrationIsDone = false;
+        hasPressedStart = false;
+
+        
     }
 }
