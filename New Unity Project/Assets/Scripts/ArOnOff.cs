@@ -9,7 +9,6 @@ public class ArOnOff : MonoBehaviour
     public GameObject text;
     public GameObject ARSession;
     public GameObject ARSessionOrigin;
-    public GameObject ARPlanes;
 
     public GameObject[] UIElements;
 
@@ -32,9 +31,8 @@ public class ArOnOff : MonoBehaviour
         //isOn = false;
         textComponent.text = textOff;
 
-        ARSession.SetActive(false);
-        ARSessionOrigin.SetActive(false);
-        ARPlanes.SetActive(false);
+        //ARSession.SetActive(false);
+        //ARSessionOrigin.SetActive(false);
 
         //turn on main menu
         turnOnMainMenu();
@@ -42,17 +40,17 @@ public class ArOnOff : MonoBehaviour
     }
 
     private void Update() {
-        checking_AR();   
+        //checking_AR();   
     }
     
     public void checking_AR()
     {
-        if(ARSessionOrigin.activeSelf == true)
+        if(ARSession.activeSelf == true)
         {
             Debug.Log("AR is on");
             textComponent.text = textOn;
             
-        } else if(ARSessionOrigin.activeSelf == false)
+        } else if(ARSession.activeSelf == false)
         {
             Debug.Log("AR is off");
             textComponent.text = textOff;
@@ -66,7 +64,6 @@ public class ArOnOff : MonoBehaviour
         //turn on AR
         ARSession.SetActive(true);
         ARSessionOrigin.SetActive(true);
-        ARPlanes.SetActive(true);
 
         //turn off main menu
         foreach (var item in UIElements)

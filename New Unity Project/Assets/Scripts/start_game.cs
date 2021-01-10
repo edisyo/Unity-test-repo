@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using TMPro;
 
 
 
@@ -12,14 +13,23 @@ public class start_game : MonoBehaviour
     public GameObject scan_text;
     [HideInInspector] 
     public bool hasPressedStart;
+    public Camera ARCamera;
 
     public GameObject previewObject;
     public GameObject objectToInstantiate;
     public GameObject touchScreenText;
+    public TextMeshProUGUI debugText;
+    public TextMeshProUGUI debugText2;
 
     private ARRaycastManager ArRaycast;
     private bool hasFoundPlane;
     private bool calibrationIsDone;
+    private bool readyToPreview;
+    
+
+
+    private Pose placementPose;
+    private bool placementIsValid = false;
 
     private void Awake() {
         scan_text.SetActive(false);
@@ -28,79 +38,90 @@ public class start_game : MonoBehaviour
         hasFoundPlane = false;
         touchScreenText.SetActive(false);
         calibrationIsDone = false;
+        readyToPreview = false;
 
-        ArRaycast = FindObjectOfType<ARRaycastManager>();
+        objectToInstantiate.SetActive(false);
+
+        
     }
 
     void Start()
     {
-        
+        ArRaycast = FindObjectOfType<ARRaycastManager>();
     }
 
 
     void Update()
-    {
-        //if hasnt calibrated
-        if(!calibrationIsDone){
-
-            //activate scan text
-            if(hasPressedStart){
-                scan_text.SetActive(true);
-                Debug.Log("has pressed start");
-
+    {   
+        if(hasPressedStart)
+        {
+            if(!calibrationIsDone)
+            {
+                //update preview object
+                updatePlacementPose();
+                updatePreviewObject();
             }
-
-            //activate raycast to planes
-            if(scan_text.activeSelf == true && !hasFoundPlane){
-                var screenCenter = Camera.current.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
-                var hits = new List<ARRaycastHit>();
-
-                //raycast to place preview object
-                if(ArRaycast.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon)){
-                    hasFoundPlane = true;
-                } else {
-                    hasFoundPlane = false;
-                }
+            
+            //if touches screen - place real object where is preview object and end previewing
+            if(placementIsValid && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began){
+                placeObject();
             }
+        }
 
-            //If has found planes, start to preview the object
-            if(hasFoundPlane){
-                Debug.Log("has found plane");
-                scan_text.SetActive(false);
-
-                //raycast to preview the object
-                if(scan_text.activeSelf == true && !hasFoundPlane){
-                    var screenCenter = Camera.current.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
-                    var hits = new List<ARRaycastHit>();
-
-                    Pose hitpose = hits[0].pose;
-                    updatePreviewObject(hitpose);
-
-                    
-                }
-            }
+        //when AR object is placed
+        if(calibrationIsDone)
+        {
+            debugText2.text = "PLACED";
         }
         
-
     }
 
-    //Set preview object active and update its position
-    private void updatePreviewObject(Pose objectPose){
-        previewObject.SetActive(true);
-        touchScreenText.SetActive(true);
+    private void updatePlacementPose()
+    {                
+        var screenCenter = ARCamera.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
+        var hits = new List<ARRaycastHit>();
 
-        //place at the center of the screen and make the objects look at users camera
-        previewObject.transform.position = objectPose.position;
-        previewObject.transform.LookAt(ArRaycast.transform);
-
-        if(Input.touchCount > 0){
-            Touch touch = Input.GetTouch(0);
-
-            if(touch.phase == TouchPhase.Began){
-                previewObject.SetActive(false);
-                Instantiate(objectToInstantiate, previewObject.transform.position, previewObject.transform.rotation);
-                calibrationIsDone = true;
-            }
+        //update pose
+        ArRaycast.Raycast(screenCenter, hits, TrackableType.PlaneWithinPolygon);
+            
+        Debug.Log("raycastin");
+        placementIsValid = hits.Count > 0;
+        debugText.text = "Placement: " + placementIsValid;
+        if(placementIsValid)
+        {
+            Debug.Log("placement is valid, updating pose");
+            placementPose = hits[0].pose;
         }
+    }
+    //Set preview object active and update its position
+    private void updatePreviewObject()
+    {
+        Debug.Log("updateing preview");
+        if(placementIsValid)
+        {
+            previewObject.SetActive(true);
+            scan_text.SetActive(false);
+            touchScreenText.SetActive(true);
+            previewObject.transform.SetPositionAndRotation(placementPose.position, placementPose.rotation);
+
+        }
+        else
+        {
+            scan_text.SetActive(true);
+            previewObject.SetActive(false);
+        }
+    }
+
+    private void placeObject(){
+
+        //set preview off and turn on real AR object, apply pose position and rotation
+        previewObject.SetActive(false);
+        objectToInstantiate.SetActive(true);
+        objectToInstantiate.transform.position = placementPose.position;
+        objectToInstantiate.transform.rotation = placementPose.rotation;
+
+        calibrationIsDone = true;
+        scan_text.SetActive(false);
+
     }
 }
