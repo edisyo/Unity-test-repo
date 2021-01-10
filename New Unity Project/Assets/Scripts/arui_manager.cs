@@ -22,6 +22,7 @@ public class arui_manager : MonoBehaviour
 
     public void Exercise_name_Button(string name){
         name_text.text = name;
+        FindObjectOfType<audioManager>().Play("Menu Button Press");
     }
     public void Exercise_description_Button(string description){
         description_text.text = description;

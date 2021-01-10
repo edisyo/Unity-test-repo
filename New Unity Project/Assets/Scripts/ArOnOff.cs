@@ -36,6 +36,8 @@ public class ArOnOff : MonoBehaviour
 
         //turn on main menu
         turnOnMainMenu();
+
+        FindObjectOfType<audioManager>().Play("Menu Background");
         
     }
 
@@ -60,7 +62,8 @@ public class ArOnOff : MonoBehaviour
     }
 
     public void Start_button(){
-
+        FindObjectOfType<audioManager>().Play("Menu Button Press");
+        
         //turn on AR
         ARSession.SetActive(true);
         ARSessionOrigin.SetActive(true);
